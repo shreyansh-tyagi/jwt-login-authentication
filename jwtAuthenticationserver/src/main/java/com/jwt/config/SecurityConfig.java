@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.jwt.model.JwtRequest;
 import com.jwt.service.LoginUserDetailService;
 
 @Configuration
@@ -57,4 +58,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 																				// injected into our code
 		return super.authenticationManagerBean();
 	}
+	
 }
