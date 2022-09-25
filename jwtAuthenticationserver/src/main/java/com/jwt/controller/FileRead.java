@@ -5,18 +5,21 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.User;
 
-import com.jwt.helper.JwtTokenHelper;
+import com.jwt.model.JwtRequest;
+import com.jwt.service.LoginUserDetailService;
 
 public class FileRead {
 	
 	@Autowired
-	private JwtTokenHelper jwtTokenHelper;
+	private JwtRequest jwtRequest;
 	
 	@Value("${url}")
 	private String URL;
@@ -26,13 +29,13 @@ public class FileRead {
 	File input=new File(URL);
 	FileReader fr=null;
 	String str;
-	String username=null;
-	username= this.jwtTokenHelper.username;
 	try {
 		fr=new FileReader(input);
 		BufferedReader br =new BufferedReader(fr);
 		while((str=br.readLine())!=null) {
-			if(str.contains())
+			if(str.contains(jwtRequest.getUsername()) && str.contains(jwtRequest.getPassword())) {
+				UsernamePassword(jwtRequest.getUsername(),jwtRequest.getPassword());
+			}
 		}
 		
 		
@@ -49,4 +52,8 @@ public class FileRead {
 	}
 
 }
+	public void UsernamePassword(String user, String pass) {
+		
+	}
+	
 }
