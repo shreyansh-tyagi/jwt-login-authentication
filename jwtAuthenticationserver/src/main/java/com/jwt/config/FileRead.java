@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.jwt.model.JwtRequest;
 import com.jwt.service.LoginUserDetailService;
@@ -34,8 +35,11 @@ public class FileRead {
 			BufferedReader br = new BufferedReader(fr);
 			while ((str = br.readLine()) != null) {
 				if (str.contains(jwtRequest.getUsername()) && str.contains(jwtRequest.getPassword())) {
-					username = jwtRequest.getUsername();
-					password = jwtRequest.getPassword();
+					jwtRequest.setUsername(jwtRequest.getUsername());
+					jwtRequest.setPassword(jwtRequest.getPassword());
+				}
+				else {
+					throw new UsernameNotFoundException("user not found!");
 				}
 			}
 

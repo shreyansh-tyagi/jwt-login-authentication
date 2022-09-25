@@ -1,23 +1,17 @@
 package com.jwt.helper;
 
-import java.security.SignatureException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
 
 /* this class will contain all the method:-
  * generating the token
@@ -37,7 +31,7 @@ public class JwtTokenHelper {
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
-
+  
 	@Value("${jwt.expirationDateInMs}")
 	public void setJwtExpirationInMs(int jwtExpirationInMs) {
 		this.jwtExpirationInMs = jwtExpirationInMs;
@@ -70,7 +64,7 @@ public class JwtTokenHelper {
 
 	// for retrieving any information from token we need secret key
 	private Claims getAllClaimsFromToken(String token) {
-		return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+		return Jwts.parser().setSigningKey(secret.getBytes()).parseClaimsJws(token).getBody();
 	}
 
 	// check if token has expired
@@ -94,14 +88,14 @@ public class JwtTokenHelper {
 
 		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
 				.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-				.signWith(SignatureAlgorithm.HS512, secret).compact();
+				.signWith(SignatureAlgorithm.HS512, secret.getBytes()).compact();
 	}
 	
 	public String doGenerateRefreshToken(Map<String, Object> claims, String subject) {
 
 		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
 				.setExpiration(new Date(System.currentTimeMillis() + refreshExpirationDateInMs))
-				.signWith(SignatureAlgorithm.HS512, secret).compact();
+				.signWith(SignatureAlgorithm.HS512, secret.getBytes()).compact();
 
 	}
 
@@ -109,14 +103,8 @@ public class JwtTokenHelper {
 		return (!isTokenExpired(token) || ignoreTokenExpiration(token));
 	}
 
-	public boolean validateToken(String authToken) {
-		try {
-			Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken);
-			return true;
-		} catch (MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
-			throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
-		} catch (ExpiredJwtException ex) {
-			throw ex;
-		}
-	}
+	public Boolean validateToken(String token, UserDetails userDetails) {
+		final String username = getUsernameFromToken(token);
+		return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+}
 }
