@@ -1,5 +1,11 @@
 package com.jwt.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +22,8 @@ import com.jwt.helper.JwtTokenHelper;
 import com.jwt.model.JwtRequest;
 import com.jwt.model.JwtResponse;
 import com.jwt.service.LoginUserDetailService;
+
+import io.jsonwebtoken.impl.DefaultClaims;
 
 @RestController
 public class JwtController {
@@ -55,6 +63,25 @@ public class JwtController {
 		String token = this.jwtTokenHelper.generateToken(userDetails);
 		System.out.println("JWT Token: " + token);
 		return ResponseEntity.ok(new JwtResponse(token)); // this is to change the format into JSON
+	}
+	
+	
+	@RequestMapping(value = "/refreshtoken", method = RequestMethod.GET)
+	public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
+		// From the HttpRequest get the claims
+		DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+
+		Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
+		String token = jwtTokenHelper.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
+		return ResponseEntity.ok(new JwtResponse(token));
+	}
+
+	public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
+		Map<String, Object> expectedMap = new HashMap<String, Object>();
+		for (Entry<String, Object> entry : claims.entrySet()) {
+			expectedMap.put(entry.getKey(), entry.getValue());
+		}
+		return expectedMap;
 	}
 
 }
