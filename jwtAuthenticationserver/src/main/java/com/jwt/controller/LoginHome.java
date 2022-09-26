@@ -1,5 +1,8 @@
 package com.jwt.controller;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
@@ -25,28 +28,67 @@ public class LoginHome {
 	}
 
 	@GetMapping("/show-info/{showid}")
-	public Object getShows(@Validated @PathVariable("showid") String showid) throws JsonProcessingException, MalformedURLException {
-		URL url = new URL("http://www.javatpoint.com/java-tutorial");
-		URL url1 = new URL("http://www.javatpoint.com/java-tutorial");
-		JSONObject jsonObject = getJson(url);
-		JSONObject jsonObject1 = getJson(url1);
+	public JSONObject getShows(@Validated @PathVariable("showid") String showid) throws JsonProcessingException, MalformedURLException {
+		HttpURLConnection connection = null;
+		URL url = new URL("http://api.tvmaze.com/shows");
+		URL url1 = new URL("http://api.tvmaze.com/shows/1/episodes");
 		JSONObject obj = new JSONObject();
-		for (int i = 0; i < jsonObject.length(); i++) {
-			obj.put("id", jsonObject.getInt("id"));
-			obj.put("url", jsonObject.getString("url"));
-			obj.put("name", jsonObject.getString("name"));
-			obj.put("type", jsonObject.getString("type"));
-			obj.put("language", jsonObject.getString("language"));
-			obj.put("status", jsonObject.getString("status"));
-			obj.put("runtime", jsonObject.getInt("runtime"));
-			obj.put("premiered", jsonObject.getString("premiered"));
-			JSONArray jsonArray = (JSONArray) jsonObject.get("externals");
-	        Iterator<Object> iterator = jsonArray.iterator();
-	        while(iterator.hasNext()) {
-	           obj.put("externals",iterator.next());
-	         }
-			
+		try {
+		connection =  (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Content-Type","application/json");
+        connection.setRequestProperty("Accept","application/json");
+        connection.setUseCaches(false);
+        connection.setAllowUserInteraction(false);
+        connection.connect();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuffer stringBuffer = new StringBuffer();
+        String result ="";
+		String output = null;
+		while ((result = bufferedReader.readLine()) != null) {
+		    output = result.replace("[", "").replace("]", "");
+		    JSONObject jsonObject = new JSONObject(output); 
+		    JSONArray jsonArray = new JSONArray(output); 
+		    
+			for (int i = 1; i < jsonObject.length(); i++) {
+				obj.put("id", jsonObject.getInt("id"));
+				obj.put("url", jsonObject.getString("url"));
+				obj.put("name", jsonObject.getString("name"));
+				obj.put("type", jsonObject.getString("type"));
+				obj.put("language", jsonObject.getString("language"));
+				obj.put("status", jsonObject.getString("status"));
+				obj.put("runtime", jsonObject.getInt("runtime"));
+				obj.put("premiered", jsonObject.getString("premiered"));
+			    jsonArray = (JSONArray) jsonObject.get("externals");
+		        Iterator<Object> iterator = jsonArray.iterator();
+		        while(iterator.hasNext()) {
+		           obj.put("externals",iterator.next());
+		         }
+				
+			}
+		     
 		}
+		
+        bufferedReader.close();
+        System.out.println(stringBuffer.toString());
+    }
+    catch(Exception e){
+        System.out.println(e);
+    }
+    finally{
+        if (connection != null) {
+        try {
+            connection.disconnect();
+        }catch (Exception ex) {
+            System.out.println("Error");
+        }
+     }
+    }
+		
+	/*
+	 * JSONObject jsonObject = getJson(url); JSONObject jsonObject1 = getJson(url1);
+	 */
+		
 
 		/*
 		 * RestTemplate restTemplate = new RestTemplate(); Object[] shows =
