@@ -1,6 +1,8 @@
 package com.jwt.controller;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -24,33 +25,37 @@ public class LoginHome {
 	}
 
 	@GetMapping("/show-info/{showid}")
-	public Object getShows(@Validated @PathVariable("showid") String showid) throws JsonProcessingException {
-		URL url=new URL("http://www.javatpoint.com/java-tutorial"); 
-		URL url1=new URL("http://www.javatpoint.com/java-tutorial"); 
-		JSONObject jsonObject =getJson(url);
-		JSONArray arr = (JSONArray) jsonObject.get("id");
-        for(int i=0; i<arr.length(); i++){
-        	JSONObject issue = (JSONObject) arr.get(i);
-            String issue_key = (String) arr.get("key");
-            JSONObject fields = (JSONObject) arr.get("fields");
-            JSONObject project = (JSONObject) arr.get("project");
-            String project_name = (String) project.get("key");
-            String fields_updated = (String) fields.get("updated");
-            String fields_created = (String) fields.get("created");
-            
-        }
-        JSONObject jsonObject1 =getJson(url1);
-		jsonObject.getString("id");
-		RestTemplate restTemplate = new RestTemplate();
+	public Object getShows(@Validated @PathVariable("showid") String showid) throws JsonProcessingException, MalformedURLException {
+		URL url = new URL("http://www.javatpoint.com/java-tutorial");
+		URL url1 = new URL("http://www.javatpoint.com/java-tutorial");
+		JSONObject jsonObject = getJson(url);
+		JSONObject jsonObject1 = getJson(url1);
+		JSONObject obj = new JSONObject();
+		for (int i = 0; i < jsonObject.length(); i++) {
+			obj.put("id", jsonObject.getInt("id"));
+			obj.put("url", jsonObject.getString("url"));
+			obj.put("name", jsonObject.getString("name"));
+			obj.put("type", jsonObject.getString("type"));
+			obj.put("language", jsonObject.getString("language"));
+			obj.put("status", jsonObject.getString("status"));
+			obj.put("runtime", jsonObject.getInt("runtime"));
+			obj.put("premiered", jsonObject.getString("premiered"));
+			JSONArray jsonArray = (JSONArray) jsonObject.get("externals");
+	        Iterator<Object> iterator = jsonArray.iterator();
+	        while(iterator.hasNext()) {
+	           obj.put("externals",iterator.next());
+	         }
+			
+		}
 
-		
 		/*
-		 * Object[] shows = restTemplate.getForObject(url, Object[].class); Object[]
-		 * episode = restTemplate.getForObject(url1, Object[].class); ArrayList<Object>
-		 * merge = new ArrayList<>(); merge.add(shows); merge.add(episode);
+		 * RestTemplate restTemplate = new RestTemplate(); Object[] shows =
+		 * restTemplate.getForObject(url, Object[].class); Object[] episode =
+		 * restTemplate.getForObject(url1, Object[].class); ArrayList<Object> merge =
+		 * new ArrayList<>(); merge.add(shows); merge.add(episode);
 		 * System.out.println(merge);
 		 */
-		return merge;
+		return obj;
 
 	}
 

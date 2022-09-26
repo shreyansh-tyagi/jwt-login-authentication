@@ -36,6 +36,8 @@ public class JwtController {
 
 	@Autowired
 	private JwtTokenHelper jwtTokenHelper;
+	
+	String token;
 
 	@RequestMapping(value = "/token", method = RequestMethod.POST)
 	public ResponseEntity<?> generateToken(@RequestBody JwtRequest jwtRequest) throws Exception { // getting username
@@ -61,7 +63,7 @@ public class JwtController {
 
 		// if try block execute successfully then it will generate the token
 		UserDetails userDetails = this.loginUserDetailService.loadUserByUsername(jwtRequest.getUsername());
-		String token = this.jwtTokenHelper.generateToken(userDetails);
+		token = this.jwtTokenHelper.generateToken(userDetails);
 		System.out.println("JWT Token: " + token);
 		return ResponseEntity.ok(new JwtResponse(token)); // this is to change the format into JSON
 	}
