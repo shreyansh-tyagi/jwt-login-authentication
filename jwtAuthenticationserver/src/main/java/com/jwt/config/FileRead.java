@@ -10,9 +10,10 @@ import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
 
+import com.jwt.helper.JwtTokenHelper;
 import com.jwt.model.JwtRequest;
 import com.jwt.service.LoginUserDetailService;
 
@@ -20,16 +21,22 @@ public class FileRead {
 
 	@Autowired
 	private JwtRequest jwtRequest;
+	
+	@Autowired 
+	private LoginUserDetailService loginUserDetailService;
+	
+	@Autowired
+	private JwtTokenHelper jwtTokenHelper;
 
 	@Value("${url}")
 	private String URL;
 
 	File input = new File(URL);
 	FileReader fr = null;
-	String str;
+	String str, token=null;
 	String username, password;
 
-	public void fileReader() throws IOException {
+	public String fileReader() throws IOException {
 
 		try {
 			fr = new FileReader(input);
@@ -38,6 +45,8 @@ public class FileRead {
 				if (str.contains(jwtRequest.getUsername()) && str.contains(jwtRequest.getPassword())) {
 					jwtRequest.setUsername(jwtRequest.getUsername());
 					jwtRequest.setPassword(jwtRequest.getPassword());
+					UserDetails userDetails = this.loginUserDetailService.loadUserByUsername(jwtRequest.getUsername());
+				    token = this.jwtTokenHelper.generateToken(userDetails);
 				}
 				else {
 					throw new UsernameNotFoundException("user not found!");
@@ -53,6 +62,7 @@ public class FileRead {
 		} finally {
 			fr.close();
 		}
+		return token;
 
 	}
 }

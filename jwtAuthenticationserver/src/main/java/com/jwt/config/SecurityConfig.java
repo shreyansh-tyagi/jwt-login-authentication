@@ -11,9 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.jwt.model.JwtRequest;
 import com.jwt.service.LoginUserDetailService;
 
 @Configuration
@@ -34,10 +34,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/token") // allow URL
 				.permitAll().anyRequest() // all other request are permitted but if
 											// request token is hit then for that permit is there
-				.authenticated().and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+				.authenticated()
+				.and()
+				.formLogin()
+				.permitAll()
+				.and()
+				.logout()
+				.permitAll()
+                .logoutUrl("/custom-logout")
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 		
 		http.addFilterBefore(jwtFilter,UsernamePasswordAuthenticationFilter.class); 
 	}
+	
+	 @Bean
+     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+             http.authorizeRequests().antMatchers("/logout").hasRole("USER").and().formLogin()
+                             .and()
+                             // sample logout customization
+                             .logout().deleteCookies("remove").invalidateHttpSession(false)
+                             .logoutUrl("/custom-logout").logoutSuccessUrl("/logout-success");
+             return http.build();
+     }
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {

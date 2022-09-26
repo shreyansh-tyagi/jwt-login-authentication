@@ -49,6 +49,7 @@ public class JwtController {
 			this.authenticationManager.authenticate( // getting username and password from jwtrequest to authenticate
 														// the user
 					new UsernamePasswordAuthenticationToken(jwtRequest.getUsername(), jwtRequest.getPassword()));
+					
 
 		} catch (UsernameNotFoundException e) {
 			e.printStackTrace();
